@@ -1,3 +1,4 @@
+import time
 from flask import Flask, jsonify, request, send_from_directory
 
 app = Flask(__name__)
@@ -40,7 +41,6 @@ def get_state():
         print(f"Error fetching board state: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/move', methods=['POST'])
 def make_move():
     try:
@@ -50,33 +50,44 @@ def make_move():
 
         print(f"Player move received: {from_pos} -> {to_pos}")
 
-        # Validate move BEFORE executing
+        # Validate the player's move FIRST
         if not board.is_move_legal((from_pos[1], from_pos[0]), (to_pos[1], to_pos[0])):
-            print("❌ Illegal player move blocked")
-            return jsonify({'status': 'error', 'message': 'Illegal move, try again'}), 400
+            print("❌ Invalid player move attempted")
+            return jsonify({'status': 'error', 'message': 'Invalid move'})
 
-        # Execute move ONLY if valid
-        if board.move_piece((from_pos[1], from_pos[0]), (to_pos[1], to_pos[0])):  # (row, col) order
-            print(f"✅ Board after player move:\n{board.get_state()}")
+        # Make the player's move
+        board.move_piece((from_pos[1], from_pos[0]), (to_pos[1], to_pos[0]))
+        print(f"✅ Board after player move:\n{board.get_state()}")
 
-            # AI responds only if player move was valid
-            ai_move = ai.get_best_move('black', depth=4)
-            if ai_move:
-                piece, move = ai_move
-                print(f"🤖 AI move: {piece} -> {move}")
-
-                if board.is_move_legal(piece, move):
-                    board.move_piece(piece, move)
-                else:
-                    print(f"🚨 AI attempted invalid move: {piece} -> {move}")
-
-            return jsonify({'status': 'success', 'board': board.get_state()})
-
-        print("❌ Player move failed unexpectedly")
-        return jsonify({'status': 'error', 'message': 'Failed to make move'}), 500
+        # Respond with updated board immediately — no AI move yet
+        return jsonify({'status': 'success', 'board': board.get_state(), 'message': 'Player move complete'})
 
     except Exception as e:
         print(f"💥 Error processing move: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+@app.route('/ai-move', methods=['POST'])
+def ai_move():
+    try:
+        print("🤖 AI is thinking...")
+
+        # AI makes its move
+        ai_move = ai.get_best_move('black', depth=4)
+        if ai_move:
+            piece, move = ai_move
+            print(f"🤖 AI move: {piece} -> {move}")
+
+            if board.is_move_legal(piece, move):
+                time.sleep(1)  # Optional delay for visual effect
+                board.move_piece(piece, move)
+                print(f"✅ Board after AI move:\n{board.get_state()}")
+            else:
+                print(f"🚨 AI attempted invalid move: {piece} -> {move}")
+
+        return jsonify({'status': 'success', 'board': board.get_state(), 'message': 'AI move complete'})
+
+    except Exception as e:
+        print(f"💥 Error processing AI move: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 

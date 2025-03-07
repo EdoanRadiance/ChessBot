@@ -49,17 +49,44 @@ async function makeMove(from, to) {
 
         const data = await response.json();
         if (data.status === 'success') { 
-            fetchBoard();
             addToLog(`👤 Player move: ${formatMove(from, to)}`);
             drawMove(from, to);
+
+            fetchAiMove();
         } else {
             addToLog(`❌ Invalid Move`);
             alert(data.message);
+            fetchBoard();
         }
     } catch (error) {
         console.error('Error making move:', error);
     }
 }
+
+async function fetchAiMove(){
+    try{
+        const response = await fetch('/ai-move', {
+            method: 'POST', })
+        const data = await response.json();
+        if(data.status === 'success') {
+            print("hello")
+        }
+
+    
+            
+
+
+
+        
+
+
+
+    } catch(error){}
+}
+
+
+
+
 
 function drawMove(from, to) {
     const piece = boardElement.children[from[0] * 8 + from[1]].textContent;
