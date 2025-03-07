@@ -37,8 +37,8 @@ function selectSquare(row, col) {
 }
 
 async function makeMove(from, to) {
-    addToLog(`👤 Player move: ${formatMove(from, to)}`);
-    drawMove(from, to); // Show player’s move right away
+    addToLog(`✅ Processing move`);
+    // Show player’s move right away
 
     try {
         const response = await fetch('/move', {
@@ -48,9 +48,12 @@ async function makeMove(from, to) {
         });
 
         const data = await response.json();
-        if (data.status === 'success') {
+        if (data.status === 'success') { 
             fetchBoard();
+            addToLog(`👤 Player move: ${formatMove(from, to)}`);
+            drawMove(from, to);
         } else {
+            addToLog(`❌ Invalid Move`);
             alert(data.message);
         }
     } catch (error) {

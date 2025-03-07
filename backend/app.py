@@ -50,12 +50,16 @@ def make_move():
 
         print(f"Player move received: {from_pos} -> {to_pos}")
 
-        # Human move
-        if board.move_piece((from_pos[1], from_pos[0]), (to_pos[1], to_pos[0])):  # (row, col) — FIXED
+        # Validate move BEFORE executing
+        if not board.is_move_legal((from_pos[1], from_pos[0]), (to_pos[1], to_pos[0])):
+            print("❌ Illegal player move blocked")
+            return jsonify({'status': 'error', 'message': 'Illegal move, try again'}), 400
 
+        # Execute move ONLY if valid
+        if board.move_piece((from_pos[1], from_pos[0]), (to_pos[1], to_pos[0])):  # (row, col) order
             print(f"✅ Board after player move:\n{board.get_state()}")
 
-            # AI responds
+            # AI responds only if player move was valid
             ai_move = ai.get_best_move('black', depth=4)
             if ai_move:
                 piece, move = ai_move
@@ -63,18 +67,18 @@ def make_move():
 
                 if board.is_move_legal(piece, move):
                     board.move_piece(piece, move)
-                    print(f"✅ Board after ai move:\n{board.get_state()}")
                 else:
                     print(f"🚨 AI attempted invalid move: {piece} -> {move}")
 
             return jsonify({'status': 'success', 'board': board.get_state()})
 
-        print("❌ Invalid player move attempted")
-        return jsonify({'status': 'error', 'message': 'Invalid move'})
+        print("❌ Player move failed unexpectedly")
+        return jsonify({'status': 'error', 'message': 'Failed to make move'}), 500
 
     except Exception as e:
         print(f"💥 Error processing move: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
 
 
 
