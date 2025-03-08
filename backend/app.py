@@ -53,7 +53,7 @@ def make_move():
         data = request.json
         from_pos = tuple(data['from'])  # Starting position of the piece
         to_pos = tuple(data['to'])      # Ending position of the piece
-
+        
         print(f"Player move received: {from_pos} -> {to_pos}")
 
         # Validate the player's move before making it
@@ -63,6 +63,7 @@ def make_move():
 
         # Execute the player's move
         board.move_piece((from_pos[1], from_pos[0]), (to_pos[1], to_pos[0]))
+        print(f"Moving piece:  from {from_pos} to {to_pos}")
         print(f"✅ Board after player move:\n{board.get_state()}")
 
         # Return the updated board state

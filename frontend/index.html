@@ -8,8 +8,19 @@
 <body>
     <h1>Human vs AI Chess</h1>
     <div id="chessboard"></div>
-    <div id="move-log"></div>div>
+    <div id="move-log"></div>
+
+    <!-- Reset Button -->
     <button onclick="resetBoard()">Reset Board</button>
+
+    <!-- Promotion Buttons Section (Initially Hidden) -->
+    <div id="promotion-buttons" style="display: none;">
+        <button onclick="promoteTo('q')">Queen</button>
+        <button onclick="promoteTo('r')">Rook</button>
+        <button onclick="promoteTo('b')">Bishop</button>
+        <button onclick="promoteTo('n')">Knight</button>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

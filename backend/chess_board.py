@@ -10,13 +10,13 @@ class ChessBoard:
     def setup_default(self):
         """Set up the board with the standard chess layout."""
         self.board = [
-            ['r', 't', 'b', 'q', 'k', 'b', 't', 'r'],
-            ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+            ['r', 't', 'b', 'q', 'k', 'b', 't', '.'],
+            ['p', 'p', 'p', 'p', 'p', 'p', 'p', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', 'P'],
             ['.', '.', '.', '.', '.', '.', '.', '.'],
             ['.', '.', '.', '.', '.', '.', '.', '.'],
             ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+            ['P', 'P', 'P', 'P', 'P', 'P', 'P', '.'],
             ['R', 'T', 'B', 'Q', 'K', 'B', 'T', 'R']
         ]
 
@@ -38,14 +38,32 @@ class ChessBoard:
         
         if self.is_move_legal(from_pos, to_pos):
             # Perform the move
+            
+            
+
             self.board[to_row][to_col] = piece
             self.board[from_row][from_col] = '.'
+
+            if (piece == 'P' and to_row == 7):
+                #print("White pawn promoted!")
+                self.promote_pawn((to_col, to_row), 'Q')
+            elif (piece == 'p' and to_row == 0):
+                #print("Black pawn promoted!")
+                self.promote_pawn((to_col, to_row), 'q')
+
             return True
         else:
             
             return False
 
 
+    def promote_pawn(self, position, promo_piece):
+        col,row = position
+        if self.board[row][col] == 'P':
+            self.board[row][col] = promo_piece.upper()
+        if self.board[row][col] == 'p':
+            self.board[row][col] = promo_piece.lower()
+        
 
 
 
