@@ -28,3 +28,18 @@ button {
     padding: 10px 20px;
     font-size: 18px;
 }
+
+.square img {
+    width: 40px;  /* adjust as needed */
+    height: 40px; /* adjust as needed */
+  }
+  
+  #move-log {
+    max-height: 200px; /* Adjust this height as needed */
+    overflow-y: auto; /* Enables vertical scrolling */
+    border: 1px solid #ccc; /* Optional: for visual separation */
+    padding: 8px;
+    background: #f9f9f9; /* Optional: background color */
+    border-radius: 8px;
+  }
+  

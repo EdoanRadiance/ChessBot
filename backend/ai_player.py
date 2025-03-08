@@ -1,4 +1,3 @@
-# backend/ai_player.py
 import copy
 
 class AIPlayer:
@@ -11,11 +10,13 @@ class AIPlayer:
         white_score = 0
         black_score = 0
 
+        # Piece values for evaluation
         piece_values = {
-            'p': 1, 't': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 100,
-            'P': 1, 'T': 3, 'B': 3, 'R': 5, 'Q': 9, 'K': 100
+            'p': 1, 't': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 1000,  # Black pieces
+            'P': 1, 'T': 3, 'B': 3, 'R': 5, 'Q': 9, 'K': 1000   # White pieces
         }
 
+        # Calculate total score for both sides
         for row in self.board.board:
             for piece in row:
                 if piece in piece_values:
@@ -32,6 +33,7 @@ class AIPlayer:
         if self.board.is_checkmate(enemy):
             white_score += 100 if player == 'white' else -100
 
+        # Return evaluation based on the player
         return white_score - black_score if player == 'white' else black_score - white_score
 
     def get_best_move(self, player, depth=4):
@@ -54,6 +56,7 @@ class AIPlayer:
             print(f"No legal moves available for {player}")
             return None
 
+        # Run MinMax algorithm to determine the best move
         best_move, best_score = self.minmax(player, depth, float('-inf'), float('inf'), True)
         print(f"AI chose move: {best_move} with score: {best_score}")
 

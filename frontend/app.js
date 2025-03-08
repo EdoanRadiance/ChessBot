@@ -2,6 +2,26 @@ const boardElement = document.getElementById('chessboard');
 const moveLogElement = document.getElementById('move-log');
 let selectedSquare = null;
 
+
+const pieceImages = {
+    'r': 'assets/pieces/rook-b.svg',
+    't': 'assets/pieces/knight-b.svg',
+    'b': 'assets/pieces/bishop-b.svg',
+    'q': 'assets/pieces/queen-b.svg',
+    'k': 'assets/pieces/king-b.svg',
+    'p': 'assets/pieces/pawn-b.svg',
+    'R': 'assets/pieces/rook-w.svg',
+    'T': 'assets/pieces/knight-w.svg',
+    'B': 'assets/pieces/bishop-w.svg',
+    'Q': 'assets/pieces/queen-w.svg',
+    'K': 'assets/pieces/king-w.svg',
+    'P': 'assets/pieces/pawn-w.svg',
+    '.': 'assets/pieces/empty.png'  // You may leave empty squares blank or use a placeholder.
+  };
+  
+
+
+
 async function fetchBoard() {
     try {
         const response = await fetch('/state');
@@ -14,18 +34,25 @@ async function fetchBoard() {
 
 function drawBoard(board) {
     boardElement.innerHTML = '';
-
+  
     board.forEach((row, rowIndex) => {
-        row.forEach((piece, colIndex) => {
-            const square = document.createElement('div');
-            square.className = `square ${(rowIndex + colIndex) % 2 === 0 ? 'light' : 'dark'}`;
-            square.textContent = piece !== '.' ? piece : '';
-
-            square.addEventListener('click', () => selectSquare(rowIndex, colIndex));
-            boardElement.appendChild(square);
-        });
+      row.forEach((piece, colIndex) => {
+        const square = document.createElement('div');
+        square.className = `square ${(rowIndex + colIndex) % 2 === 0 ? 'light' : 'dark'}`;
+  
+        if (piece !== '.') {
+          const img = document.createElement('img');
+          img.src = pieceImages[piece] || '';
+          img.alt = piece;
+          square.appendChild(img);
+        }
+  
+        square.addEventListener('click', () => selectSquare(rowIndex, colIndex));
+        boardElement.appendChild(square);
+      });
     });
-}
+  }
+  
 
 function selectSquare(row, col) {
     if (selectedSquare) {
@@ -49,14 +76,16 @@ async function makeMove(from, to) {
 
         const data = await response.json();
         if (data.status === 'success') { 
-            addToLog(`👤 Player move: ${formatMove(from, to)}`);
+            
             drawMove(from, to);
-
+            addToLog(`👤 Player move: ${formatMove(from, to)}`);
+            
+            
             fetchAiMove();
         } else {
             addToLog(`❌ Invalid Move`);
             alert(data.message);
-            fetchBoard();
+            
         }
     } catch (error) {
         console.error('Error making move:', error);
@@ -68,20 +97,20 @@ async function fetchAiMove(){
         const response = await fetch('/ai-move', {
             method: 'POST', })
         const data = await response.json();
+        const {from, to } = data.move
+        
         if(data.status === 'success') {
-            print("hello")
+            addToLog(`🤖 AI move: ${formatAIMove(from, to)}`);
+            
+            fetchBoard();
+        } else {
+            alert(data.message)
+
         }
 
     
-            
 
-
-
-        
-
-
-
-    } catch(error){}
+    } catch(error){console.error('💥 Error making AI move:', error);}
 }
 
 
@@ -89,20 +118,44 @@ async function fetchAiMove(){
 
 
 function drawMove(from, to) {
-    const piece = boardElement.children[from[0] * 8 + from[1]].textContent;
-    boardElement.children[to[0] * 8 + to[1]].textContent = piece;
-    boardElement.children[from[0] * 8 + from[1]].textContent = '';
-}
+    const fromIndex = from[0] * 8 + from[1];
+    const toIndex = to[0] * 8 + to[1];
+  
+    const fromSquare = boardElement.children[fromIndex];
+    const toSquare = boardElement.children[toIndex];
+  
+    
+    const pieceImg = fromSquare.querySelector('img');
+    if (pieceImg) {
+      
+      fromSquare.removeChild(pieceImg);
+      
+      
+      toSquare.innerHTML = '';
+      
+      toSquare.appendChild(pieceImg);
+    }
+  }
+  
 
 function addToLog(message) {
     const logEntry = document.createElement('div');
     logEntry.textContent = message;
     moveLogElement.appendChild(logEntry);
+    moveLogElement.scrollTop =  moveLogElement.scrollHeight;
 }
 
 function formatMove(from, to) {
     const cols = 'abcdefgh';
+    
+
     return `${cols[from[1]]}${8 - from[0]} ➡️ ${cols[to[1]]}${8 - to[0]}`;
+}
+function formatAIMove(from, to) {
+    const cols = 'abcdefgh';
+    
+
+    return `${cols[from[0]]}${8 - from[1]} ➡️ ${cols[to[0]]}${8 - to[1]}`;
 }
 
 async function resetBoard() {
