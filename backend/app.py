@@ -18,17 +18,17 @@ def serve_static(path):
 try:
     from chess_board import ChessBoard
     from ai_player import AIPlayer
-    print("Board and AI imported successfully!")
+    print("[INFO] Board and AI imported successfully!")
 except Exception as e:
-    print(f"Error importing board or AI: {e}")
+    print(f"[ERROR] Error importing board or AI: {e}")
 
 # Create instances of the chess board and AI player
 try:
     board = ChessBoard()
     ai = AIPlayer(board)
-    print("Board and AI instances created successfully!")
+    print("[INFO] Board and AI instances created successfully!")
 except Exception as e:
-    print(f"Error creating board or AI instances: {e}")
+    print(f"[ERROR] Error creating board or AI instances: {e}")
 
 # Simple route to confirm Flask is running
 @app.route('/')
@@ -40,10 +40,10 @@ def home():
 def get_state():
     try:
         board_state = board.get_state()  # Get current board state
-        print("Board state fetched successfully!")
+        print("[INFO] Board state fetched successfully!")
         return jsonify({'board': board_state})
     except Exception as e:
-        print(f"Error fetching board state: {e}")
+        print(f"[ERROR] Error fetching board state: {e}")
         return jsonify({'error': str(e)}), 500
 
 # Endpoint to handle a player's move
@@ -54,45 +54,45 @@ def make_move():
         from_pos = tuple(data['from'])  # Starting position of the piece
         to_pos = tuple(data['to'])      # Ending position of the piece
         
-        print(f"Player move received: {from_pos} -> {to_pos}")
+        print(f"[INFO] Player move received: {from_pos} -> {to_pos}")
 
         # Validate the player's move before making it
         if not board.is_move_legal((from_pos[1], from_pos[0]), (to_pos[1], to_pos[0])):
-            print("❌ Invalid player move attempted")
+            print("[ERROR] Invalid player move attempted")
             return jsonify({'status': 'error', 'message': 'Invalid move'})
 
         # Execute the player's move
         board.move_piece((from_pos[1], from_pos[0]), (to_pos[1], to_pos[0]))
-        print(f"Moving piece:  from {from_pos} to {to_pos}")
-        print(f"✅ Board after player move:\n{board.get_state()}")
+        print(f"[INFO] Moving piece: from {from_pos} to {to_pos}")
+        print(f"[INFO] ✅ Board after player move:\n{board.get_state()}")
 
         # Return the updated board state
         return jsonify({'status': 'success', 'board': board.get_state(), 'message': 'Player move complete'})
 
     except Exception as e:
-        print(f"💥 Error processing move: {e}")
+        print(f"[ERROR] 💥 Error processing move: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 # Endpoint to handle the AI's move
 @app.route('/ai-move', methods=['POST'])
 def ai_move():
     try:
-        print("🤖 AI is thinking...")
+        print("[INFO] 🤖 AI is thinking...")
 
         # AI determines its best move
         ai_move = ai.get_best_move('black', depth=4)
         if ai_move:
             piece, move = ai_move
-            print(f"🤖 AI move: {piece} -> {move}")
+            print(f"[INFO] 🤖 AI move: {piece} -> {move}")
 
             # Validate and execute the AI's move
             if board.is_move_legal(piece, move):
                 time.sleep(1)  # Optional delay for visual effect
                 board.move_piece(piece, move)
-                print(f"✅ Board after AI move:\n{board.get_state()}")
-                print(f"{piece} and {move}")
+                print(f"[INFO] ✅ Board after AI move:\n{board.get_state()}")
+                print(f"[INFO] AI move completed: {piece} -> {move}")
             else:
-                print(f"🚨 AI attempted invalid move: {piece} -> {move}")
+                print(f"[ERROR] 🚨 AI attempted invalid move: {piece} -> {move}")
 
         # Return the updated board state
         return jsonify({
@@ -103,7 +103,7 @@ def ai_move():
         })
 
     except Exception as e:
-        print(f"💥 Error processing AI move: {e}")
+        print(f"[ERROR] 💥 Error processing AI move: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 # Endpoint to reset the board to its starting position
@@ -111,13 +111,13 @@ def ai_move():
 def reset_board():
     try:
         board.setup_default()  # Reset the board
-        print("Board reset to default setup")
+        print("[INFO] Board reset to default setup")
         return jsonify({'status': 'success', 'board': board.get_state()})
     except Exception as e:
-        print(f"Error resetting board: {e}")
+        print(f"[ERROR] Error resetting board: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 # Start the Flask server
 if __name__ == '__main__':
-    print("Starting Flask server...")
+    print("[INFO] Starting Flask server...")
     app.run(debug=True)

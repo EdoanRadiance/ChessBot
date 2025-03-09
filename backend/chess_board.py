@@ -44,8 +44,8 @@ class ChessBoard:
             self.board[to_row][to_col] = piece
             self.board[from_row][from_col] = '.'
 
-            if (piece == 'P' and to_row == 7):
-                #print("White pawn promoted!")
+            if (piece == 'P' and to_row == 0):
+                print("White pawn promoted!")
                 self.promote_pawn((to_col, to_row), 'Q')
             elif (piece == 'p' and to_row == 0):
                 #print("Black pawn promoted!")
