@@ -33,6 +33,13 @@ class AIPlayer:
         if self.board.is_checkmate(enemy):
             white_score += 100 if player == 'white' else -100
 
+        for row in self.board.board:
+            for piece in row:
+                if(piece == 'P' and row == 0):
+                    white_score += 7
+                if(piece == 'p' and row == 7):
+                    black_score += 7
+
         # Return evaluation based on the player
         return white_score - black_score if player == 'white' else black_score - white_score
 

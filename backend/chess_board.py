@@ -14,8 +14,8 @@ class ChessBoard:
         self.board = [
             ['r', 't', 'b', 'q', 'k', 'b', 't', '.'],  # Row 0: Black major pieces
             ['p', 'p', 'p', 'p', 'p', 'p', 'p', '.'],  # Row 1: Black pawns
-            ['.', '.', '.', '.', '.', '.', '.', 'P'],  # Row 2
-            ['.', '.', '.', '.', '.', '.', '.', '.'],  # Row 3
+            ['.', '.', '.', '.', '.', '.', '.', '.'],  # Row 2
+            ['.', '.', '.', '.', '.', '.', '.', 'K'],  # Row 3
             ['.', '.', '.', '.', '.', '.', '.', '.'],  # Row 4
             ['.', '.', '.', '.', '.', '.', '.', '.'],  # Row 5
             ['P', 'P', 'P', 'P', 'P', 'P', 'P', '.'],  # Row 6: White pawns
@@ -85,10 +85,11 @@ class ChessBoard:
         from_piece = self.board[from_row][from_col]
         to_piece = self.board[to_row][to_col]
         is_white = from_piece.isupper()
+
         # is_black is not used further, so we can omit it if desired.
         if from_square == to_square:
             return False
-
+        
         if from_piece.lower() == 'p':
             return self.is_pawn_move_legal(from_square, to_square, is_white, log_rejection=False)
         if from_piece.lower() == 'r':
@@ -101,6 +102,7 @@ class ChessBoard:
             return self.is_knight_move_legal(from_square, to_square, is_white)
         if from_piece.lower() == 'k':
             return self.is_king_move_legal(from_square, to_square, is_white)
+        
         return False
 
     # --- Piece movement rules ---
@@ -182,7 +184,8 @@ class ChessBoard:
 
         if abs(to_row - from_row) <= 1 and abs(to_col - from_col) <= 1:
             if to_piece == '.' or (is_white and to_piece.islower()) or (not is_white and to_piece.isupper()):
-                return True
+                if not self.does_move_put_player_in_check('white' if is_white else 'black', from_square, to_square):
+                    return True
         return False
 
     # --- Helper functions ---

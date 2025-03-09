@@ -69,11 +69,14 @@ def make_move():
         print(f"[INFO] ✅ Board after player move:\n{board.get_state()}")
 
         # Return the updated board state
-        return jsonify({'status': 'success', 'board': board.get_state(), 'message': 'Player move complete'})
+        return jsonify({'status': 'success', 
+                        'board': board.get_state(),
+                        'message': 'Player move complete'})
 
     except Exception as e:
         print(f"[ERROR] 💥 Error processing move: {e}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+        return jsonify({'status': 'error',
+                         'message': str(e)}), 500
 
 # Endpoint to handle the AI's move
 @app.route('/ai-move', methods=['POST'])

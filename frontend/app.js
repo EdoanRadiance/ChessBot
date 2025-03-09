@@ -2,6 +2,8 @@ const boardElement = document.getElementById('chessboard');
 const moveLogElement = document.getElementById('move-log');
 let selectedSquare = null;
 let turn = 'player'
+let opponent = 'black'
+let player = 'white'
 
 const pieceImages = {
     'r': 'assets/pieces/rook-b.svg',
@@ -59,6 +61,7 @@ function selectSquare(row, col) {
         addToLog(`❌ Its not your turn.`);
         return;
     }
+    
         
     if (selectedSquare) {
         makeMove(selectedSquare, [row, col]);
@@ -71,7 +74,7 @@ function selectSquare(row, col) {
 async function makeMove(from, to) {
     addToLog(`✅ Processing move`);
     // Show player’s move right away
-
+    
     try {
         const response = await fetch('/move', {
             method: 'POST',
@@ -85,6 +88,12 @@ async function makeMove(from, to) {
             drawMove(from, to);
             addToLog(`👤 Player move: ${formatMove(from, to)}`);
             
+            if(data.status === 'checkmate'){
+                alert(data.message);
+                return;
+            }
+                
+
             turn = 'ai';
             fetchAiMove();
         } else {
@@ -106,8 +115,13 @@ async function fetchAiMove(){
         
         if(data.status === 'success') {
             addToLog(`🤖 AI move: ${formatAIMove(from, to)}`);
-            
             fetchBoard();
+            if (data.status === 'checkmate') {
+                addToLog(`🏁 ${data.message}`);
+                alert(data.message);  // Show checkmate alert to the user
+                return;  // Stop further actions, game is over
+            }
+            
             turn = 'player'
         } else {
             alert(data.message)
@@ -178,5 +192,16 @@ async function resetBoard() {
         console.error('Error resetting board:', error);
     }
 }
+
+
+function disableBoard() {
+    const squares = boardElement.querySelectorAll('.square');
+    squares.forEach(square => {
+        square.removeEventListener('click', selectSquare);
+        square.classList.add('disabled');  // You can style .disabled class with CSS
+    });
+}
+
+
 
 fetchBoard();

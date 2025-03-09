@@ -4,23 +4,32 @@
     <meta charset="UTF-8">
     <title>Human vs AI Chess</title>
     <link rel="stylesheet" href="style.css">
+
 </head>
+
+
+
 <body>
 
-    <h1>Human vs AI Chess</h1>
-
     <!-- Chessboard Container with row/column labels -->
+     <section>
+    <div id="header">
+        <h1>Human vs AI Chess</h1>
+        </div>
+
+
+    <div id="name">
     <div id="chessboard-container">
         <!-- Column labels (A to H) -->
         <div id="column-labels">
-            <div>A</div>
+            <!-- <div>A</div>
             <div>B</div>
             <div>C</div>
             <div>D</div>
             <div>E</div>
             <div>F</div>
             <div>G</div>
-            <div>H</div>
+            <div>H</div> -->
         </div>
 
         <!-- Chessboard itself -->
@@ -28,23 +37,33 @@
             <!-- 8x8 chessboard squares will go here -->
         </div>
 
+ 
+
         <!-- Row labels (1 to 8) -->
         <div id="row-labels">
-          <div>1</div>
+          <!-- <div>1</div>
           <div>2</div>
-<div>3</div>
+        <div>3</div>
             <div>4</div>
             <div>5</div>
             <div>6</div>
             <div>7</div>
-            <div>8</div>
+            <div>8</div> -->
         </div>
+    </div>
+    <div id="move-log"></div>
 </div>
 
-    <div id="move-log"></div>
+
+
+    <div id="reset-button-container">
+        <button onclick="resetBoard()">Reset Board</button>
+</div>
+
+</section>
+
 
     <!-- Reset Button -->
-    <button onclick="resetBoard()">Reset Board</button>
 
     <!-- Promotion Buttons Section (Initially Hidden) -->
     <div id="promotion-buttons" style="display: none;">
