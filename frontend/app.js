@@ -1,7 +1,7 @@
 const boardElement = document.getElementById('chessboard');
 const moveLogElement = document.getElementById('move-log');
 let selectedSquare = null;
-
+let turn = 'player'
 
 const pieceImages = {
     'r': 'assets/pieces/rook-b.svg',
@@ -55,6 +55,11 @@ function drawBoard(board) {
   
 
 function selectSquare(row, col) {
+    if(turn != 'player') {
+        addToLog(`❌ Its not your turn.`);
+        return;
+    }
+        
     if (selectedSquare) {
         makeMove(selectedSquare, [row, col]);
         selectedSquare = null;
@@ -80,7 +85,7 @@ async function makeMove(from, to) {
             drawMove(from, to);
             addToLog(`👤 Player move: ${formatMove(from, to)}`);
             
-            
+            turn = 'ai';
             fetchAiMove();
         } else {
             addToLog(`❌ Invalid Move`);
@@ -103,6 +108,7 @@ async function fetchAiMove(){
             addToLog(`🤖 AI move: ${formatAIMove(from, to)}`);
             
             fetchBoard();
+            turn = 'player'
         } else {
             alert(data.message)
 

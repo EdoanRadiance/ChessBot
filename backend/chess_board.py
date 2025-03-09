@@ -56,11 +56,11 @@ class ChessBoard:
             # Promotion conditions:
             # White pawn ('P') promotes when reaching row 0 (top)
             if piece == 'P' and to_row == 0:
-                print("White pawn promoted!")
+                #print("White pawn promoted!")
                 self.promote_pawn((to_row, to_col), 'Q')
             # Black pawn ('p') promotes when reaching row 7 (bottom)
             elif piece == 'p' and to_row == 7:
-                print("Black pawn promoted!")
+                #print("Black pawn promoted!")
                 self.promote_pawn((to_row, to_col), 'q')
 
             return True
