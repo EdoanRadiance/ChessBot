@@ -31,7 +31,7 @@ except Exception as e:
     print(f"[ERROR] Error creating board or AI instances: {e}")
 
 # Simple route to confirm Flask is running
-@app.route('/')
+@app.route('/home')
 def home():
     return "Flask is working!"
 
@@ -51,18 +51,20 @@ def get_state():
 def make_move():
     try:
         data = request.json
-        from_pos = tuple(data['from'])  # Starting position of the piece
-        to_pos = tuple(data['to'])      # Ending position of the piece
+        # Expecting coordinates in (row, col) order
+        from_pos = tuple(data['from'])
+        to_pos = tuple(data['to'])
         
         print(f"[INFO] Player move received: {from_pos} -> {to_pos}")
 
-        # Validate the player's move before making it
-        if not board.is_move_legal((from_pos[1], from_pos[0]), (to_pos[1], to_pos[0])):
+        # Validate the player's move without swapping indices,
+        # since our board now uses (row, col) order consistently.
+        if not board.is_move_legal(from_pos, to_pos):
             print("[ERROR] Invalid player move attempted")
             return jsonify({'status': 'error', 'message': 'Invalid move'})
 
         # Execute the player's move
-        board.move_piece((from_pos[1], from_pos[0]), (to_pos[1], to_pos[0]))
+        board.move_piece(from_pos, to_pos)
         print(f"[INFO] Moving piece: from {from_pos} to {to_pos}")
         print(f"[INFO] ✅ Board after player move:\n{board.get_state()}")
 
@@ -79,28 +81,30 @@ def ai_move():
     try:
         print("[INFO] 🤖 AI is thinking...")
 
-        # AI determines its best move
-        ai_move = ai.get_best_move('black', depth=4)
-        if ai_move:
-            piece, move = ai_move
-            print(f"[INFO] 🤖 AI move: {piece} -> {move}")
+        # AI determines its best move; expected as (from_pos, to_pos) in (row, col) order
+        best_move = ai.get_best_move('black', depth=4)
+        if best_move:
+            from_pos, to_pos = best_move
+            print(f"[INFO] 🤖 AI move: {from_pos} -> {to_pos}")
 
             # Validate and execute the AI's move
-            if board.is_move_legal(piece, move):
+            if board.is_move_legal(from_pos, to_pos):
                 time.sleep(1)  # Optional delay for visual effect
-                board.move_piece(piece, move)
+                board.move_piece(from_pos, to_pos)
                 print(f"[INFO] ✅ Board after AI move:\n{board.get_state()}")
-                print(f"[INFO] AI move completed: {piece} -> {move}")
+                print(f"[INFO] AI move completed: {from_pos} -> {to_pos}")
             else:
-                print(f"[ERROR] 🚨 AI attempted invalid move: {piece} -> {move}")
+                print(f"[ERROR] 🚨 AI attempted invalid move: {from_pos} -> {to_pos}")
 
-        # Return the updated board state
-        return jsonify({
-            'status': 'success', 
-            'board': board.get_state(), 
-            'message': 'AI move complete', 
-            'move': {'from': piece, 'to': move}
-        })
+            # Return the updated board state along with the AI move
+            return jsonify({
+                'status': 'success', 
+                'board': board.get_state(), 
+                'message': 'AI move complete', 
+                'move': {'from': from_pos, 'to': to_pos}
+            })
+        else:
+            return jsonify({'status': 'error', 'message': 'No legal moves available'}), 400
 
     except Exception as e:
         print(f"[ERROR] 💥 Error processing AI move: {e}")

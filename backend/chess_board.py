@@ -6,18 +6,20 @@ class ChessBoard:
         """Initialize the board and set up the default layout."""
         self.board = []
         self.setup_default()
+        self.debug_count = 0
 
     def setup_default(self):
         """Set up the board with the standard chess layout."""
+        # Note: row 0 is the top and row 7 is the bottom.
         self.board = [
-            ['r', 't', 'b', 'q', 'k', 'b', 't', '.'],
-            ['p', 'p', 'p', 'p', 'p', 'p', 'p', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', 'P'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['P', 'P', 'P', 'P', 'P', 'P', 'P', '.'],
-            ['R', 'T', 'B', 'Q', 'K', 'B', 'T', 'R']
+            ['r', 't', 'b', 'q', 'k', 'b', 't', '.'],  # Row 0: Black major pieces
+            ['p', 'p', 'p', 'p', 'p', 'p', 'p', '.'],  # Row 1: Black pawns
+            ['.', '.', '.', '.', '.', '.', '.', 'P'],  # Row 2
+            ['.', '.', '.', '.', '.', '.', '.', '.'],  # Row 3
+            ['.', '.', '.', '.', '.', '.', '.', '.'],  # Row 4
+            ['.', '.', '.', '.', '.', '.', '.', '.'],  # Row 5
+            ['P', 'P', 'P', 'P', 'P', 'P', 'P', '.'],  # Row 6: White pawns
+            ['R', 'T', 'B', 'Q', 'K', 'B', 'T', 'R']   # Row 7: White major pieces
         ]
 
     def get_state(self):
@@ -31,50 +33,59 @@ class ChessBoard:
         print()
 
     def move_piece(self, from_pos, to_pos):
-        """Move a piece if the move is legal."""
-        from_col, from_row = from_pos
-        to_col, to_row = to_pos
-        piece = self.board[from_row][from_col]
+        """Move a piece if the move is legal.
         
+        Coordinates in from_pos and to_pos are in (row, col) order.
+        """
+        # Unpack coordinates as (row, col)
+        from_row, from_col = from_pos
+        to_row, to_col = to_pos
+        piece = self.board[from_row][from_col]
+
+        # Debug message (will print only the first 20 calls)
+        if self.debug_count < 20:
+            print(f"[DEBUG] Moving piece from {from_pos} (board[{from_row}][{from_col}]) "
+                  f"to {to_pos} (board[{to_row}][{to_col}]), piece: {piece}")
+            self.debug_count += 1
+
         if self.is_move_legal(from_pos, to_pos):
             # Perform the move
-            
-            
-
             self.board[to_row][to_col] = piece
             self.board[from_row][from_col] = '.'
 
-            if (piece == 'P' and to_row == 0):
+            # Promotion conditions:
+            # White pawn ('P') promotes when reaching row 0 (top)
+            if piece == 'P' and to_row == 0:
                 print("White pawn promoted!")
-                self.promote_pawn((to_col, to_row), 'Q')
-            elif (piece == 'p' and to_row == 0):
-                #print("Black pawn promoted!")
-                self.promote_pawn((to_col, to_row), 'q')
+                self.promote_pawn((to_row, to_col), 'Q')
+            # Black pawn ('p') promotes when reaching row 7 (bottom)
+            elif piece == 'p' and to_row == 7:
+                print("Black pawn promoted!")
+                self.promote_pawn((to_row, to_col), 'q')
 
             return True
         else:
-            
             return False
 
-
     def promote_pawn(self, position, promo_piece):
-        col,row = position
+        """Promote a pawn at the given (row, col) position."""
+        row, col = position
         if self.board[row][col] == 'P':
             self.board[row][col] = promo_piece.upper()
-        if self.board[row][col] == 'p':
+        elif self.board[row][col] == 'p':
             self.board[row][col] = promo_piece.lower()
-        
-
-
 
     def is_move_legal(self, from_square, to_square):
-        """Determine if a move is legal for the piece at from_square."""
-        from_col, from_row = from_square
-        to_col, to_row = to_square
+        """Determine if a move is legal for the piece at from_square.
+        
+        Coordinates are expected in (row, col) order.
+        """
+        from_row, from_col = from_square
+        to_row, to_col = to_square
         from_piece = self.board[from_row][from_col]
         to_piece = self.board[to_row][to_col]
         is_white = from_piece.isupper()
-        is_black = from_piece.islower()
+        # is_black is not used further, so we can omit it if desired.
         if from_square == to_square:
             return False
 
@@ -94,40 +105,41 @@ class ChessBoard:
 
     # --- Piece movement rules ---
     def is_pawn_move_legal(self, from_square, to_square, is_white, log_rejection=False):
-        from_col, from_row = from_square
-        to_col, to_row = to_square
+        from_row, from_col = from_square
+        to_row, to_col = to_square
         to_piece = self.board[to_row][to_col]
 
         if is_white:
-        # Move forward one square
+            # White pawns move upward (to lower row numbers)
+            # Move forward one square
             if from_row - to_row == 1 and from_col == to_col and to_piece == '.':
                 return True
-            # Move forward two squares from starting position
-            elif from_row - to_row == 2 and from_col == to_col and from_row == 6 and to_piece == '.' and self.board[from_row - 1][from_col] == '.' and self.is_clear_path(from_square, to_square):
+            # Move forward two squares from starting position (row 6)
+            elif (from_row - to_row == 2 and from_col == to_col and from_row == 6 and 
+                  to_piece == '.' and self.board[from_row - 1][from_col] == '.' and 
+                  self.is_clear_path(from_square, to_square)):
                 return True
             # Capture diagonally
             elif from_row - to_row == 1 and abs(to_col - from_col) == 1 and to_piece != '.' and to_piece.islower():
                 return True
         else:
-        # Move forward one square
+            # Black pawns move downward (to higher row numbers)
+            # Move forward one square
             if to_row - from_row == 1 and from_col == to_col and to_piece == '.':
                 return True
-            # Move forward two squares from starting position
-            elif to_row - from_row == 2 and from_col == to_col and from_row == 1 and to_piece == '.' and self.board[from_row + 1][from_col] == '.' and self.is_clear_path(from_square, to_square):
+            # Move forward two squares from starting position (row 1)
+            elif (to_row - from_row == 2 and from_col == to_col and from_row == 1 and 
+                  to_piece == '.' and self.board[from_row + 1][from_col] == '.' and 
+                  self.is_clear_path(from_square, to_square)):
                 return True
             # Capture diagonally
             elif to_row - from_row == 1 and abs(to_col - from_col) == 1 and to_piece != '.' and to_piece.isupper():
                 return True
         return False
 
-
-
-
-
-
     def is_rook_move_legal(self, from_square, to_square, is_white):
-        from_col, from_row = from_square
-        to_col, to_row = to_square
+        from_row, from_col = from_square
+        to_row, to_col = to_square
         to_piece = self.board[to_row][to_col]
 
         if (to_row == from_row or to_col == from_col) and self.is_clear_path(from_square, to_square):
@@ -136,8 +148,8 @@ class ChessBoard:
         return False
 
     def is_bishop_move_legal(self, from_square, to_square, is_white):
-        from_col, from_row = from_square
-        to_col, to_row = to_square
+        from_row, from_col = from_square
+        to_row, to_col = to_square
         to_piece = self.board[to_row][to_col]
 
         if abs(to_row - from_row) == abs(to_col - from_col) and self.is_clear_path(from_square, to_square):
@@ -149,8 +161,8 @@ class ChessBoard:
         return self.is_rook_move_legal(from_square, to_square, is_white) or self.is_bishop_move_legal(from_square, to_square, is_white)
 
     def is_knight_move_legal(self, from_square, to_square, is_white):
-        from_col, from_row = from_square
-        to_col, to_row = to_square
+        from_row, from_col = from_square
+        to_row, to_col = to_square
         to_piece = self.board[to_row][to_col]
 
         knight_moves = [
@@ -164,8 +176,8 @@ class ChessBoard:
         return False
 
     def is_king_move_legal(self, from_square, to_square, is_white):
-        from_col, from_row = from_square
-        to_col, to_row = to_square
+        from_row, from_col = from_square
+        to_row, to_col = to_square
         to_piece = self.board[to_row][to_col]
 
         if abs(to_row - from_row) <= 1 and abs(to_col - from_col) <= 1:
@@ -180,11 +192,11 @@ class ChessBoard:
         king_piece = 'K' if player == 'white' else 'k'
         king_pos = None
 
-        # Find the king's position
+        # Find the king's position (use (row, col))
         for row in range(8):
             for col in range(8):
                 if self.board[row][col] == king_piece:
-                    king_pos = (col, row)
+                    king_pos = (row, col)
                     break
             if king_pos:
                 break
@@ -193,16 +205,14 @@ class ChessBoard:
             return False
 
         # Check if any opposing piece can attack the king
-        enemy_is_white = player == 'black'
+        enemy_is_white = (player == 'black')
         for row in range(8):
             for col in range(8):
                 piece = self.board[row][col]
                 if (enemy_is_white and piece.isupper()) or (not enemy_is_white and piece.islower()):
-                    if self.is_move_legal((col, row), king_pos):
+                    if self.is_move_legal((row, col), king_pos):
                         return True
         return False
-
-
 
     def is_checkmate(self, player):
         """Check if the current player is in checkmate."""
@@ -211,32 +221,26 @@ class ChessBoard:
                 return True
         return False
 
-    import copy
-
     def does_move_put_player_in_check(self, player, from_square, to_square):
         """Simulate a move on a copy of the board to check if it leaves the player in check."""
-        # Create a deep copy of the entire board object (self)
         board_copy = copy.deepcopy(self)
+        from_row, from_col = from_square
+        to_row, to_col = to_square
         
-        # Extract coordinates for clarity
-        from_col, from_row = from_square
-        to_col, to_row = to_square
-        
-        # Simulate the move on the copied board state:
         board_copy.board[to_row][to_col] = board_copy.board[from_row][from_col]
         board_copy.board[from_row][from_col] = '.'
         
-        # Now use the copied board's is_in_check() to determine if the move leaves the player in check.
         return board_copy.is_in_check(player)
 
-
     # --- Move generation ---
-    def get_list_of_legal_moves(self, from_square):
-        """Get a list of legal moves for the piece at from_square."""
-        legal_moves = []
-        from_col, from_row = from_square
-        piece = self.board[from_row][from_col]
 
+    def get_list_of_legal_moves(self, from_square):
+        """Get a list of legal moves for the piece at from_square.
+           Coordinates are in (row, col) order.
+        """
+        legal_moves = []
+        from_row, from_col = from_square
+        piece = self.board[from_row][from_col]
 
         if piece.isupper():
             player = 'white'
@@ -246,50 +250,36 @@ class ChessBoard:
         if piece == '.':
             return []
 
-        
-
         for row in range(8):
             for col in range(8):
-                to_square = (col, row)
+                to_square = (row, col)
                 if self.is_move_legal(from_square, to_square) and not self.does_move_put_player_in_check(player, from_square, to_square):
                     legal_moves.append(to_square)
 
         return legal_moves
 
     def get_pieces_with_legal_moves(self, player):
-        """Get a list of pieces that have at least one legal move."""
+        """Get a list of pieces (their positions in (row, col)) that have at least one legal move."""
         legal_pieces = []
 
         for row in range(8):
             for col in range(8):
-                from_square = self.board[col][row]
-                from_co = (row, col)
-
-
-                if(player == 'white'):
-                    if(from_square.isupper()):
-                        if self.get_list_of_legal_moves(from_co):
-                            legal_pieces.append(from_co)
-                else:
-                    if(player == 'black'):
-                        if(from_square.islower()):
-                            if self.get_list_of_legal_moves(from_co):
-                                legal_pieces.append(from_co)
-
-
-               
-
+                piece = self.board[row][col]
+                pos = (row, col)
+                if player == 'white':
+                    if piece.isupper() and self.get_list_of_legal_moves(pos):
+                        legal_pieces.append(pos)
+                elif player == 'black':
+                    if piece.islower() and self.get_list_of_legal_moves(pos):
+                        legal_pieces.append(pos)
         return legal_pieces
-    
 
-
-
-
-
-    
     def is_clear_path(self, from_square, to_square):
-        from_col, from_row = from_square
-        to_col, to_row = to_square
+        """Check if there is an unobstructed path between two squares.
+           Coordinates are in (row, col) order.
+        """
+        from_row, from_col = from_square
+        to_row, to_col = to_square
 
         row_step = 0 if from_row == to_row else (1 if to_row > from_row else -1)
         col_step = 0 if from_col == to_col else (1 if to_col > from_col else -1)
