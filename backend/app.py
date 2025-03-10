@@ -1,9 +1,13 @@
 import time
+import threading
 from flask import Flask, jsonify, request, send_from_directory
 
 # Initialize Flask app
 app = Flask(__name__)
 
+turn = 'player'
+game_running = True
+last_ai_move = None
 # Serve the main HTML file for the frontend
 @app.route('/')
 def serve_index():
@@ -30,6 +34,42 @@ try:
 except Exception as e:
     print(f"[ERROR] Error creating board or AI instances: {e}")
 
+
+
+
+def main_game_loop():
+    global turn, game_running, last_ai_move
+    while game_running:
+        # Check if it is AI's turn
+        if turn == 'ai':
+            print("[GAME LOOP] It's AI's turn. Calculating move...")
+            best_move = ai.get_best_move('black', depth=4)
+            if best_move:
+                from_pos, to_pos = best_move
+                # Validate and execute the move
+                if board.is_move_legal(from_pos, to_pos):
+                    board.move_piece(from_pos, to_pos)
+                    last_ai_move = {'from': from_pos, 'to': to_pos}
+                    print(f"[GAME LOOP] AI moved: {from_pos} -> {to_pos}")
+                else:
+                    print(f"[GAME LOOP ERROR] AI attempted invalid move: {from_pos} -> {to_pos}")
+            else:
+                print("[GAME LOOP] No legal moves available for AI.")
+            # After the AI move, set the turn back to the player.
+            turn = 'player'
+        # Sleep briefly before checking again to avoid CPU overuse.
+        time.sleep(1)
+
+@app.route('/get_ai_move', methods=['GET'])
+def get_last_ai_move():
+    global last_ai_move
+    if last_ai_move:
+        move = last_ai_move
+        last_ai_move = None
+        return jsonify({'status': 'success', 'move': move})
+    return jsonify({'status': 'no-move'})
+
+
 # Simple route to confirm Flask is running
 @app.route('/home')
 def home():
@@ -49,12 +89,12 @@ def get_state():
 # Endpoint to handle a player's move
 @app.route('/move', methods=['POST'])
 def make_move():
+    global turn
     try:
         data = request.json
         # Expecting coordinates in (row, col) order
         from_pos = tuple(data['from'])
-        to_pos = tuple(data['to'])
-        
+        to_pos = tuple(data['to']) 
         print(f"[INFO] Player move received: {from_pos} -> {to_pos}")
 
         # Validate the player's move without swapping indices,
@@ -67,8 +107,16 @@ def make_move():
         board.move_piece(from_pos, to_pos)
         print(f"[INFO] Moving piece: from {from_pos} to {to_pos}")
         print(f"[INFO] ✅ Board after player move:\n{board.get_state()}")
-
+        turn = 'ai'
         # Return the updated board state
+
+        if board.is_checkmate('black'):
+            return jsonify({'status': 'checkmate',
+                'message': 'Black has been checkmated',
+                'board': board.get_state()})
+            
+
+
         return jsonify({'status': 'success', 
                         'board': board.get_state(),
                         'message': 'Player move complete'})
@@ -78,40 +126,6 @@ def make_move():
         return jsonify({'status': 'error',
                          'message': str(e)}), 500
 
-# Endpoint to handle the AI's move
-@app.route('/ai-move', methods=['POST'])
-def ai_move():
-    try:
-        print("[INFO] 🤖 AI is thinking...")
-
-        # AI determines its best move; expected as (from_pos, to_pos) in (row, col) order
-        best_move = ai.get_best_move('black', depth=4)
-        if best_move:
-            from_pos, to_pos = best_move
-            print(f"[INFO] 🤖 AI move: {from_pos} -> {to_pos}")
-
-            # Validate and execute the AI's move
-            if board.is_move_legal(from_pos, to_pos):
-                time.sleep(1)  # Optional delay for visual effect
-                board.move_piece(from_pos, to_pos)
-                print(f"[INFO] ✅ Board after AI move:\n{board.get_state()}")
-                print(f"[INFO] AI move completed: {from_pos} -> {to_pos}")
-            else:
-                print(f"[ERROR] 🚨 AI attempted invalid move: {from_pos} -> {to_pos}")
-
-            # Return the updated board state along with the AI move
-            return jsonify({
-                'status': 'success', 
-                'board': board.get_state(), 
-                'message': 'AI move complete', 
-                'move': {'from': from_pos, 'to': to_pos}
-            })
-        else:
-            return jsonify({'status': 'error', 'message': 'No legal moves available'}), 400
-
-    except Exception as e:
-        print(f"[ERROR] 💥 Error processing AI move: {e}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 # Endpoint to reset the board to its starting position
 @app.route('/reset', methods=['POST'])
@@ -126,5 +140,10 @@ def reset_board():
 
 # Start the Flask server
 if __name__ == '__main__':
+    print("[INFO] Starting main game loop...")
+    game_loop_thread = threading.Thread(target=main_game_loop)
+    game_loop_thread.daemon = True  # Ensures it closes when the main program does
+    game_loop_thread.start()
+
     print("[INFO] Starting Flask server...")
     app.run(debug=True)

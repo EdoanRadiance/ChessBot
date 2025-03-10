@@ -19,7 +19,7 @@ class ChessBoard:
             ['.', '.', '.', '.', '.', '.', '.', '.'],  # Row 4
             ['.', '.', '.', '.', '.', '.', '.', '.'],  # Row 5
             ['P', 'P', 'P', 'P', 'P', 'P', 'P', '.'],  # Row 6: White pawns
-            ['R', 'T', 'B', 'Q', 'K', 'B', 'T', 'R']   # Row 7: White major pieces
+            ['R', 'T', 'B', 'Q', 'P', 'B', 'T', 'R']   # Row 7: White major pieces
         ]
 
     def get_state(self):

@@ -57,6 +57,7 @@ function drawBoard(board) {
   
 
 function selectSquare(row, col) {
+    //addToLog(turn);
     if(turn != 'player') {
         addToLog(`❌ Its not your turn.`);
         return;
@@ -83,19 +84,23 @@ async function makeMove(from, to) {
         });
 
         const data = await response.json();
+
+
+
+        if(data.status === 'checkmate'){
+            drawMove(from, to);
+            addToLog(`👤 Black has been checkmated with ${formatMove(from, to)}`);
+            disableBoard();
+            return;
+        }
+
         if (data.status === 'success') { 
             
             drawMove(from, to);
             addToLog(`👤 Player move: ${formatMove(from, to)}`);
-            
-            if(data.status === 'checkmate'){
-                alert(data.message);
-                return;
-            }
-                
-
-            turn = 'ai';
+            turn = 'ai'
             fetchAiMove();
+
         } else {
             addToLog(`❌ Invalid Move`);
             alert(data.message);
@@ -108,14 +113,17 @@ async function makeMove(from, to) {
 
 async function fetchAiMove(){
     try{
-        const response = await fetch('/ai-move', {
-            method: 'POST', })
+        const response = await fetch('/get_ai_move')
         const data = await response.json();
-        const {from, to } = data.move
+        
         
         if(data.status === 'success') {
+            
+            const {from, to } = data.move;
             addToLog(`🤖 AI move: ${formatAIMove(from, to)}`);
+            drawMove(from, to);
             fetchBoard();
+
             if (data.status === 'checkmate') {
                 addToLog(`🏁 ${data.message}`);
                 alert(data.message);  // Show checkmate alert to the user
@@ -124,16 +132,16 @@ async function fetchAiMove(){
             
             turn = 'player'
         } else {
-            alert(data.message)
+            setTimeout(fetchAiMove, 1000)
 
         }
+
+
 
     
 
     } catch(error){console.error('💥 Error making AI move:', error);}
 }
-
-
 
 
 
@@ -182,7 +190,9 @@ async function resetBoard() {
     try {
         const response = await fetch('/reset', { method: 'POST' });
         const data = await response.json();
+        turn = 'player'
         if (data.status === 'success') {
+            
             fetchBoard();
             moveLogElement.innerHTML = ''; // Clear log on reset
         } else {
