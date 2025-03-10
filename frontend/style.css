@@ -1,9 +1,18 @@
 html, body {
     font-family: 'Arial', sans-serif;
-    background-color: #929982;
+    background-color: #778da9;
     justify-content: center;
     height: 100vh;
     margin: 0;
+}
+
+/* New wrapper to hold both board and move log in a row */
+#board-and-log-wrapper {
+    display: flex;
+    /* Center them horizontally; remove if you don't want this centered. */
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: 20px;
 }
 
 #chessboard-container {
@@ -11,8 +20,9 @@ html, body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: 20px;
+    margin-right: 20px;
 }
+
 #chessboard {
     display: grid;
     grid-template-columns: repeat(8, 50px);
@@ -31,7 +41,7 @@ html, body {
 }
 
 .square:hover {
-    background-color: #480355;
+    background-color: #0d1b2a;
 }
 
 .dark {
@@ -42,34 +52,28 @@ html, body {
     background-color: #eeeed2;
 }
 
-button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 18px;
-}
-
 .square img {
     width: 40px;  /* adjust as needed */
     height: 40px; /* adjust as needed */
-  }
-  
-  #move-log {
-    max-height: 200px; /* Adjust this height as needed */
-    overflow-y: auto; /* Enables vertical scrolling */
-    border: 1px solid #ccc; /* Optional: for visual separation */
+}
+
+/* Move log styling */
+#move-log {
+    width: 400px;
+    height: 400px; /* or however tall you want the log to be */
+    overflow-y: auto;  /* enables vertical scrolling when content exceeds max-height */
+    border: 1px solid #ccc;
     padding: 8px;
-    background: #f9f9f9; /* Optional: background color */
+    background: #e0e1dd;
     border-radius: 8px;
-  }
-  
+}
+
 #header {
-    background-color: #666;
-    padding: auto;
+    background-color: #1b263b;
     text-align: center;
-    justify-content: center;
-    align-items: center;
-    font-size: 35px;
-    color: white;
+    font-size: 25px;
+    color: rgb(82, 92, 161);
+    padding: 10px 0;  
 }
 
 #reset-button-container {
@@ -77,11 +81,4 @@ button {
     justify-content: center;
     margin-top: 20px;
 }
-
-
-#name{
-
-    justify-content: center;
-}
-
 
